@@ -38,10 +38,85 @@ More options and details:
 These services must be installed, configured and running:
 
  * MongoDB
+```sh
+   wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
+   echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
+   apt update
+   apt install -y mongodb-org
+
+   # start mongodb
+   systemctl start mongodb.service
+
+   # control your installation with
+   systemctl status mongodb.service
+
+   # if it says active(running) run the following command
+   systemctl enable mongodb.service 
+```
+
  * ElasticSearch (7.x)
+```sh
+   curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+   echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
+   apt update
+   apt install elasticsearch
+
+   # correct config-file for elasticsearch
+   cd /etc/elasticsearch
+   vi elasticsearch.yml
+
+   # mark out or change network.host and network.port
+   # I have set it to localhost, but you can also use the IP of your server
+   network.host: localhost
+   network.port: 9200
+
+   # correct jvm.options
+   # if you are on a small dev machine /server with only 2gb ram
+   -Xms512m
+   -Xmx512m
+
+   # start elasticsearch
+   systemctl start elasticsearch.service
+  
+   # control status
+   systemctl status elasticsearch.service
+
+   # if status is active(running)
+   systemctl enable elasticsearch.service
+```
+
  * Redis
+```sh
+   apt install -y redis-server
+
+   # change one setting in redis.conf
+   # supervised no
+   # change to
+   supervised systemd
+
+   # restart redis
+   systemctl restart redis.service 
+
+   # check status
+   systemctl status redis.service 
+   
+   # if running set it to
+   systemctl enable redis.service
+```
+
  * Python (>= 3.6)
+```sh
+   # check if python 3 is installed
+   python3 -V
+
+   apt install -y python3-pip
+```
+
  * Node.js (with `npm`)
+```sh
+   # installing node and npm
+   install -y nodejs npm
+```
 
 On macOS, if you have [homebrew](https://brew.sh/) installed, simply run: `brew install mongodb elasticsearch redis python3 node`.
 
@@ -55,6 +130,8 @@ git clone https://github.com/superdesk/superdesk.git $path
 cd $path/server
 pip3 install -r requirements.txt
 python3 manage.py app:initialize_data
+
+# change this to your standard e-mail and username
 python3 manage.py users:create -u admin -p admin -e 'admin@example.com' --admin
 honcho start
 # if you need some data
